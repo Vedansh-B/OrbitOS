@@ -43,9 +43,8 @@ def send_emails_from_db(db_path, smtp_server, port, email, password, subject, me
     except Exception as e:
         print(f"Error: {e}")
 
-# Usage
 if __name__ == "__main__":
-    SMTP_SERVER = "smtp.gmail.com"  # For Gmail
+    SMTP_SERVER = "smtp.gmail.com"    
     PORT = 587
     EMAIL = "burnerone726@gmail.com"
     PASSWORD = "shrav123"  # App-specific password

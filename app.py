@@ -5,7 +5,7 @@ import requests  # For geocoding API to fetch lat/lon from location name
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
     # Example: Using OpenCage Geocoder API (replace with your API key)
-    api_key = "81e3a03c0a334c4d8dbe011c16b59c54"  # Replace with your API key
+    api_key = "Your API Key"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
