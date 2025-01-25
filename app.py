@@ -1,10 +1,17 @@
 import streamlit as st
+import pandas as pd
+from datetime import date 
+from datetime import datetime
 from components.maps import display_map
+import math
+from suntime import Sun
 import requests  # For geocoding API to fetch lat/lon from location name
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
     # Example: Using OpenCage Geocoder API (replace with your API key)
+
+    """
     api_key = "Your API Key"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
@@ -13,6 +20,69 @@ def get_lat_lon(location):
         lon = response['results'][0]['geometry']['lng']
         return lat, lon
     return None, None
+    """
+
+    def getSunsetTime(latitude, longitude):
+        sun = Sun(latitude, longitude)
+        return sun.get_sunset_time()
+
+    st.write(getSunsetTime(44.20, 76.40))
+
+    def getCurrentDate():
+        return date.today()
+    
+    def renderUpcomingEvents(csvPath, eventType):
+        date = getCurrentDate()
+        st.write("Upcoming " + eventType + " events in your area: ")
+        df = pd.read_csv(csvPath)
+
+        #Drop Unecessary Columns
+        df = df.drop(columns=["Unnamed: 0"])
+
+        #Drop past events
+        for index, row in df.iterrows():
+            if not convertEnglishDateToYearInt(row['Calendar Date']) >= int(str(date.today())[:4]):
+                df.drop(index, axis="index", inplace=True)
+
+        #Changes solar eclipse types from letters to words
+        if eventType == "solar eclipse":
+            convertSolarEclipseType(df)
+        if eventType == "lunar eclipse":
+            convertLunarEclipseType(df)
+
+        st.table(df.head(5))
+
+    def convertEnglishDateToYearInt(date):
+        for i in range(len(date)):
+            if date[i] == " ":
+                return int(date[:i])
+        return None
+    
+    def convertLunarEclipseType(df):
+        for index, row in df.iterrows():
+            if row['Eclipse Type'][0] == "T":
+                row['Eclipse Type'] = "Total"
+            elif row['Eclipse Type'][0] == "P":
+                row['Eclipse Type'] = "Partial"
+            elif row['Eclipse Type'][0] == "N":
+                row['Eclipse Type'] = "Penumbral"
+
+    def convertSolarEclipseType(df):
+        for index, row in df.iterrows():
+            if row['Eclipse Type'][0] == "T":
+                row['Eclipse Type'] = "Total"
+            elif row['Eclipse Type'][0] == "A":
+                row['Eclipse Type'] = "Annular"
+            elif row['Eclipse Type'][0] == "P":
+                row['Eclipse Type'] = "Partial"
+    
+    col1, col2 = st.columns(2)
+
+    with col1:
+        renderUpcomingEvents("data/nasa_solar_eclipse_data_revised.csv", "solar eclipse")
+
+    with col2:
+        renderUpcomingEvents("data/nasa_lunar_eclipse_data_revised.csv", "lunar eclipse")
 
 # App Config
 st.set_page_config(page_title="Celestial Insights", layout="wide")
