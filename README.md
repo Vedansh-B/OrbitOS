@@ -38,15 +38,7 @@ The app combines **spatial data** with **real-time celestial event tracking** to
 - **APIs:** OpenCage Geocoder, NASA APIs  
 
 ---
-
-## **How to Run the Project**  
-
-1. **Clone the Repository**  
-   ```bash
-   git clone https://github.com/Vedansh-B/OrbitOS.git
-   cd OrbitOS
-   
-2. ## **Requirements**
+2. ## **Requirements to Run the Project**
 
 To run the project, you will need:  
 
@@ -57,8 +49,3 @@ To run the project, you will need:
    - [WeatherAPI](https://www.weatherapi.com/)  
    - [OpenCage](https://opencagedata.com/)  
 4. Launch app.py through streamlit
-
-
-
-
-
