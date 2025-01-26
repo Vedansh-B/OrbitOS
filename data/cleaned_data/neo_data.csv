@@ -1,4 +1,4 @@
-name,close_approach_date,close_approach_time,velocity_km_s,distance_km,diameter_min_m,diameter_max_m
+name,Date,close_approach_time,velocity_km_s,distance_km,diameter_min_m,diameter_max_m
 (2015 CL),2025-01-29,23:06,12.161955498,17983951.983662928,22.1082810359,49.435619262
 (2018 CR3),2025-01-29,05:09,30.9387411296,48245526.820436656,19.8863453236,44.4672199676
 (2019 BL),2025-01-29,19:06,17.8360300648,68421299.953776049,24.2412481101,54.2050786336
