@@ -50,20 +50,13 @@ The app combines **spatial data** with **real-time celestial event tracking** to
 
 To run the project, you will need:  
 
-1. Python 3.7+** installed on your system.  
+1. Install the dependencies from requirments.txt
 2. Virtual Environment (venv):** For managing dependencies.  
 3. API Keys:  
    - [Meteomatics](https://www.meteomatics.com/)  
    - [WeatherAPI](https://www.weatherapi.com/)  
    - [OpenCage](https://opencagedata.com/)  
-4. The required Python libraries listed in `requirements.txt`.  
-
-Install the dependencies using:  
-```bash
-pip install -r requirements.txt
-Copy
-Edit
-
+4. Launch app.py through streamlit
 
 
 
