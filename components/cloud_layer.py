@@ -2,8 +2,6 @@ import math
 from datetime import datetime
 import folium
 import requests
-from folium.features import CustomIcon
-from PIL import Image
 
 def fetch_point_coverage(lat, lon, api_key):
     """
