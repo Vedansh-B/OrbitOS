@@ -1,0 +1,5 @@
+full_moons.csv
+[+] Blue moon (second full moon within one calendar month)
+[*] At this point in time, a partial lunar eclipse takes place
+[**] At this point in time, a total lunar eclipse takes place
+[/] At this point in time, penumbral lunar eclipse
