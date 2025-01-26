@@ -46,12 +46,26 @@ The app combines **spatial data** with **real-time celestial event tracking** to
    git clone https://github.com/Vedansh-B/OrbitOS.git
    cd OrbitOS
    
-2. **Install Dependencies
-Set up a Python virtual environment and install the required dependencies:
-  ```bash
-   python -m venv venv
-   source venv/bin/activate      # On macOS/Linux
-   venv\Scripts\activate         # On Windows
-   pip install -r requirements.txt
+2. ## **Requirements**
+
+To run the project, you will need:  
+
+1. Python 3.7+** installed on your system.  
+2. Virtual Environment (venv):** For managing dependencies.  
+3. API Keys:  
+   - [Meteomatics](https://www.meteomatics.com/)  
+   - [WeatherAPI](https://www.weatherapi.com/)  
+   - [OpenCage](https://opencagedata.com/)  
+4. The required Python libraries listed in `requirements.txt`.  
+
+Install the dependencies using:  
+```bash
+pip install -r requirements.txt
+Copy
+Edit
+
+
+
+
 
 
