@@ -55,7 +55,7 @@ def check_email_send():
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    api_key = "ad85e3fc5fd54c0bbdab0a47b1a9a537"  # Replace with your API key
+    api_key = "GEOKEY"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -187,13 +187,13 @@ with col11:
         st.write(f"Displaying results for: {location}")
 
         # Input your Meteomatic API Key as a tuple of ("Username", "Password")
-        display_map(lat, lon, ("univeristyo_lperson_coo", "K61vQbz56N"), new_location_query)
+        display_map(lat, lon, ("user", "pass"), new_location_query)
     else:
         st.write("Could not fetch location. Please check the input or API key.")
 
 with col22:
     def get_weather(location):
-        api_key = "d0f8eee362e6488eb8a171041252501 "  # Replace with your WeatherAPI key
+        api_key = "weatherapi "  # Replace with your WeatherAPI key
         base_url = "http://api.weatherapi.com/v1/current.json"
         params = {
             "key": api_key,
