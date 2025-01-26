@@ -1,11 +1,30 @@
 import streamlit as st
 from components.maps import display_map
-import requests  # For geocoding API to fetch lat/lon from location name
+import requests 
+import pandas as pd
+from datetime import date
+from suntime import Sun
+import requests  
+import sqlite3
+
+
+# Initialize the database
+def init_db():
+    conn = sqlite3.connect("subscribers.db")  # Create or open the database file
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE
+        )
+    """)  # Create the subscribers table
+    conn.commit()
+    conn.close()
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
     # Example: Using OpenCage Geocoder API (replace with your API key)
-    api_key = "81e3a03c0a334c4d8dbe011c16b59c54"  # Replace with your API key
+    api_key = "Your API Key"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -14,8 +33,61 @@ def get_lat_lon(location):
         return lat, lon
     return None, None
 
-# App Config
-st.set_page_config(page_title="Celestial Insights", layout="wide") 
+# Initialize the database at app start
+init_db()
+
+def getSunsetTime(latitude, longitude):
+    sun = Sun(latitude, longitude)
+    return sun.get_sunset_time()
+
+def getCurrentDate():
+    return date.today()
+    
+def renderUpcomingEvents(csvPath, eventType):
+    date = getCurrentDate()
+    st.write("Upcoming " + eventType + " events in your area: ")
+    df = pd.read_csv(csvPath)
+
+    #Drop Unecessary Columns
+    df = df.drop(columns=["Unnamed: 0"])
+
+    #Drop past events
+    for index, row in df.iterrows():
+        if not convertEnglishDateToYearInt(row['Calendar Date']) >= int(str(date.today())[:4]):
+            df.drop(index, axis="index", inplace=True)
+
+    #Changes solar eclipse types from letters to words
+    if eventType == "solar eclipse":
+        convertSolarEclipseType(df)
+    if eventType == "lunar eclipse":
+        convertLunarEclipseType(df)
+
+    st.table(df.head(5))
+
+def convertEnglishDateToYearInt(date):
+    for i in range(len(date)):
+        if date[i] == " ":
+            return int(date[:i])
+    return None
+
+def convertLunarEclipseType(df):
+    for index, row in df.iterrows():
+        if row['Eclipse Type'][0] == "T":
+            row['Eclipse Type'] = "Total"
+        elif row['Eclipse Type'][0] == "P":
+            row['Eclipse Type'] = "Partial"
+        elif row['Eclipse Type'][0] == "N":
+            row['Eclipse Type'] = "Penumbral"
+
+def convertSolarEclipseType(df):
+    for index, row in df.iterrows():
+        if row['Eclipse Type'][0] == "T":
+            row['Eclipse Type'] = "Total"
+        elif row['Eclipse Type'][0] == "A":
+            row['Eclipse Type'] = "Annular"
+        elif row['Eclipse Type'][0] == "P":
+            row['Eclipse Type'] = "Partial"
+
 # Navigation Bar
 with st.container():
     st.markdown(
@@ -47,7 +119,7 @@ with st.container():
     )
 
 # Title and Introduction
-st.title("🌌 Celestial Insights")
+st.title("🌌 Orbit OS")
 st.write(
     "Discover the best stargazing spots, track celestial events, "
     "and explore space-related data interactively."
@@ -66,16 +138,61 @@ if lat and lon:
 else:
     st.write("Could not fetch location. Please check the input or API key.")
 
+st.write(getSunsetTime(lat, lon))
+
+col1, col2 = st.columns(2)
+
+with col1:
+    renderUpcomingEvents("data/nasa_solar_eclipse_data_revised.csv", "solar eclipse")
+
+with col2:
+    renderUpcomingEvents("data/nasa_lunar_eclipse_data_revised.csv", "lunar eclipse")
+
 # About Us Section
 st.header("About Us")
 st.write("This app is designed to help stargazers find the best spots and track celestial events.")
 
-# Placeholder Login Section
-st.header("Login")
-st.write("Login functionality will be added here in the future.")
+# Newsletter Subscription Section (in the Sidebar)
+with st.sidebar:
+    st.markdown("## 📬 Subscribe to Our Newsletter")
+    email = st.text_input("Enter your email")
+    subscribe = st.button("Subscribe")
+    if subscribe and email:
+        try:
+            conn = sqlite3.connect("subscribers.db")
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO subscribers (email) VALUES (?)", (email,))
+            conn.commit()
+            conn.close()
+            # Show confirmation message with a checkmark
+            st.markdown(
+                f"<p style='color: green; font-size: 18px;'>✅ Thank you for subscribing with {email}!</p>",
+                unsafe_allow_html=True,
+            )
+        except sqlite3.IntegrityError:
+            st.error("This email is already subscribed.")
+    elif subscribe and not email:
+        st.error("Please enter a valid email address.")
 
-# Footer
-st.write("Built with ❤️ for the stars.")
+# Admin Section: View Subscribers (Optional)
+if st.checkbox("View Subscribers (Admin)"):
+    conn = sqlite3.connect("subscribers.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT email FROM subscribers")
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Display the subscriber emails
+    st.write("### Subscribed Emails:")
+    if rows:
+        for row in rows:
+            st.write(f"- {row[0]}")
+    else:
+        st.write("No subscribers yet.")
+
 
 if __name__ == "__main__":
     st.write("Running Streamlit App")
+    st.write("### Subscribed Emails:")
+    for row in rows:
+        st.write(f"- {row[0]}")
