@@ -15,7 +15,7 @@ def display_map(lat, lon, api_key, new_location_query):
         map_obj = folium.Map(location=[lat, lon],width=700,height=400, zoom_start=13, no_touch= True, max_native_zoom  = 10, min_native_zoom = 13)
         
         
-        cloud_circles = [] # get_cloud_coverage(lat, lon, api_key)
+        cloud_circles = get_cloud_coverage(lat, lon, api_key)
 
         # Add cloud coverage
         for i in cloud_circles:

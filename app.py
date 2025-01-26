@@ -21,7 +21,7 @@ def init_db():
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    api_key = "your key"  # Replace with your API key
+    api_key = "36412dcc67a4467b85c7a9e5007bc91d"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -35,6 +35,7 @@ def getSunsetTime(latitude, longitude):
     sun = Sun(latitude, longitude)
     return sun.get_sunset_time()
 
+# Get calender date
 def getCurrentDate():
         return date.today()
 
@@ -90,11 +91,11 @@ with st.sidebar:
     if st.button("Contribute Data"):
         st.write("You can contribute data here.")
     if st.button("Contact Us"):
-        st.write("Contact us at orbitos@example.com.")
+        st.write("Contact us at info.orbit.os@gmail.com")
 
     # Newsletter Subscription
     st.markdown("## 📬 Subscribe to Our Newsletter")
-    email = st.text_input("Enter your email")
+    email = st.text_input("Enter your Email")
     subscribe = st.button("Subscribe")
     if subscribe and email:
         try:
@@ -111,9 +112,19 @@ with st.sidebar:
     elif subscribe and not email:
         st.error("Please enter a valid email address.")
 
-# Main Content
-st.title("🌌 Orbit OS")
-st.write("Discover the best stargazing spots, track celestial events, and explore space-related data interactively.")
+column1, column2, column3 = st.columns([0.7, 0.1, 0.2])
+
+with column1:
+    # Main Content
+    st.title("Orbit OS")
+    st.write("Discover the best stargazing spots, track celestial events, and explore space-related data interactively.")
+
+with column2:
+    st.write(' ')
+
+with column3:
+    st.image("images/logo.jpg", width=256)
+
 
 st.header("Best Stargazing Spots")
 # Initialize session state for map data if not already done
@@ -137,10 +148,12 @@ if lat and lon:
     st.write(f"Displaying results for: {location}")
 
     # Input your API Key as a tuple of ("Username", "Password")
-    display_map(lat, lon, ("Your username", "Your password"), new_location_query)
+    display_map(lat, lon, ("queens_agnihotri_shravan", "z8UPy4N7r9"), new_location_query)
 else:
     st.write("Could not fetch location. Please check the input or API key.")
 
+st.write("Your local sunset time in UTC: ")
+st.write(getSunsetTime(lat, lon))
 
 # Align tables below the map
 st.write("## Celestial Events in Your Area")
