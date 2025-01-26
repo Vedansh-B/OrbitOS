@@ -21,7 +21,7 @@ def init_db():
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    api_key = "36412dcc67a4467b85c7a9e5007bc91d"  # Replace with your API key
+    api_key = "geokey"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -152,13 +152,13 @@ with col11:
         st.write(f"Displaying results for: {location}")
 
         # Input your API Key as a tuple of ("Username", "Password")
-        display_map(lat, lon, ("queens_agnihotri_shravan", "z8UPy4N7r9"), new_location_query)
+        display_map(lat, lon, ("user", "pass"), new_location_query)
     else:
         st.write("Could not fetch location. Please check the input or API key.")
 
 with col22:
     def get_weather(location):
-        api_key = "32a313393ee649ae97d35250252601"  # Replace with your WeatherAPI key
+        api_key = "weatherkey"  # Replace with your WeatherAPI key
         base_url = "http://api.weatherapi.com/v1/current.json"
         params = {
             "key": api_key,
