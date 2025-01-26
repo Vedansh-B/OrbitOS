@@ -45,3 +45,9 @@ Our app leverages **spatial data** and **real-time celestial event tracking** to
 ```bash
 git clone https://github.com/Vedansh-B/OrbitOS.git
 cd OrbitOS
+
+### **Acquire an API Key For the Following**
+Meteo Matics : https://www.meteomatics.com/
+WeatherAPI : https://www.weatherapi.com/
+OpenCage : https://opencagedata.com/
+
