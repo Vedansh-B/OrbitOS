@@ -16,7 +16,7 @@ def display_map(lat, lon, api_key, new_location_query):
         
         
         cloud_circles = get_cloud_coverage(lat, lon, api_key)
-
+        
         # Add cloud coverage
         for i in cloud_circles:
             i.add_to(map_obj)
