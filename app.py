@@ -21,7 +21,7 @@ def init_db():
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    api_key = "your api"  # Replace with your API key
+    api_key = "36412dcc67a4467b85c7a9e5007bc91d"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -125,6 +125,14 @@ with column2:
 with column3:
     st.image("images/logo.jpg", width=256)
 
+location = st.text_input("Enter your location (City, Country)", "Kingston, Canada")
+
+lat, lon = get_lat_lon(location)
+# Check if the input is different from the previous lat/lon
+new_location_query = (
+    lat != st.session_state["map_data"]["lat"]
+    or lon != st.session_state["map_data"]["lon"]
+)
 
 st.header("Best Stargazing Spots")
 # Initialize session state for map data if not already done
@@ -135,22 +143,54 @@ if "map_data" not in st.session_state:
         "lon": None,
     }
 
-location = st.text_input("Enter your location (City, Country)", "Kingston, Canada")
+col11, col22 = st.columns([0.6, 0.4])
 
-lat, lon = get_lat_lon(location)
-# Check if the input is different from the previous lat/lon
-new_location_query = (
-    lat != st.session_state["map_data"]["lat"]
-    or lon != st.session_state["map_data"]["lon"]
-)
 
-if lat and lon:
-    st.write(f"Displaying results for: {location}")
+with col11:
 
-    # Input your API Key as a tuple of ("Username", "Password")
-    display_map(lat, lon, ("ur user", "ur key"), new_location_query)
-else:
-    st.write("Could not fetch location. Please check the input or API key.")
+    if lat and lon:
+        st.write(f"Displaying results for: {location}")
+
+        # Input your API Key as a tuple of ("Username", "Password")
+        display_map(lat, lon, ("queens_agnihotri_shravan", "z8UPy4N7r9"), new_location_query)
+    else:
+        st.write("Could not fetch location. Please check the input or API key.")
+
+with col22:
+    def get_weather(location):
+        api_key = "32a313393ee649ae97d35250252601"  # Replace with your WeatherAPI key
+        base_url = "http://api.weatherapi.com/v1/current.json"
+        params = {
+            "key": api_key,
+            "q": location,  # City name, postal code, or coordinates
+            "aqi": "no"     # Option to include air quality index
+        }
+
+        response = requests.get(base_url, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            print(f"Error: {response.status_code}, {response.text}")
+            return None
+
+    # Test the function
+    st.title("Weather Widget")
+
+    if location:
+        weather_data = get_weather(location)
+        if weather_data:
+            st.subheader(f"Weather in {weather_data['location']['name']}, {weather_data['location']['country']}")
+            st.write(f"Temperature: {weather_data['current']['temp_c']}°C")
+            st.write(f"Condition: {weather_data['current']['condition']['text']}")
+            st.write(f"Wind Speed: {weather_data['current']['wind_kph']} kph")
+            st.image(f"https:{weather_data['current']['condition']['icon']}")
+
+    if weather_data:
+        print(f"Location: {weather_data['location']['name']}, {weather_data['location']['country']}")
+        print(f"Temperature: {weather_data['current']['temp_c']}°C")
+        print(f"Condition: {weather_data['current']['condition']['text']}")
+        print(f"Wind Speed: {weather_data['current']['wind_kph']} kph")
+
 
 st.write("Your local sunset time in UTC: ")
 st.write(getSunsetTime(lat, lon))
