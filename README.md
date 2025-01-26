@@ -41,7 +41,18 @@ The app combines **spatial data** with **real-time celestial event tracking** to
 
 ## **How to Run the Project**  
 
-### **1. Clone the Repository**  
-```bash
-git clone https://github.com/Vedansh-B/OrbitOS.git
-cd OrbitOS
+1. **Clone the Repository**  
+   ```bash
+   git clone https://github.com/Vedansh-B/OrbitOS.git
+   cd OrbitOS'''
+   
+2. **Install Dependencies
+Set up a Python virtual environment and install the required dependencies:
+  ```bash
+  python -m venv venv
+  source venv/bin/activate      # On macOS/Linux
+  venv\Scripts\activate         # On Windows
+  pip install -r requirements.txt'''
+
+3. **Acquire API Keys
+Obtain API keys for the following services:
