@@ -87,12 +87,14 @@ def renderUpcomingEvents(csvPath, eventType):
 
     st.table(df.head(5))
 
+#Takes a string input of the date, and converts it into an integer representing the year
 def convertEnglishDateToYearInt(date):
     for i in range(len(date)):
         if date[i] == " ":
             return int(date[:i])
     return None
 
+#Functions for altering the dataframe to include full words to describe the type of eclipse
 def convertLunarEclipseType(df):
     for index, row in df.iterrows():
         if row['Eclipse Type'][0] == "T":
@@ -146,6 +148,7 @@ with st.sidebar:
     elif subscribe and not email:
         st.error("Please enter a valid email address.")
 
+#Title line formatting
 column1, column2, column3 = st.columns([0.7, 0.1, 0.2])
 
 with column1:
@@ -159,8 +162,10 @@ with column2:
 with column3:
     st.image("images/logo.jpg", width=256)
 
+#Gets the location from the user
 location = st.text_input("Enter your location (City, Country)", "Kingston, Canada")
 
+#Obtains the latitude and longitude
 lat, lon = get_lat_lon(location)
 
 # Initialize session state for map data if not already done
@@ -170,7 +175,7 @@ if "map_data" not in st.session_state:
         "lat": None,
         "lon": None,
     }
-# Now, you can safely access st.session_state["map_data"]
+
 new_location_query = (
     lat != st.session_state["map_data"]["lat"]
     or lon != st.session_state["map_data"]["lon"]
@@ -197,7 +202,7 @@ with col22:
         base_url = "http://api.weatherapi.com/v1/current.json"
         params = {
             "key": api_key,
-            "q": location,  # City name, postal code, or coordinates
+            "q": location,  # City name
             "aqi": "no"     # Option to include air quality index
         }
 
@@ -219,13 +224,6 @@ with col22:
             st.write(f"Condition: {weather_data['current']['condition']['text']}")
             st.write(f"Wind Speed: {weather_data['current']['wind_kph']} kph")
             st.image(f"https:{weather_data['current']['condition']['icon']}")
-
-    if weather_data:
-        print(f"Location: {weather_data['location']['name']}, {weather_data['location']['country']}")
-        print(f"Temperature: {weather_data['current']['temp_c']}°C")
-        print(f"Condition: {weather_data['current']['condition']['text']}")
-        print(f"Wind Speed: {weather_data['current']['wind_kph']} kph")
-
 
 st.write("Your local sunset time in UTC: ")
 st.write(getSunsetTime(lat, lon))
