@@ -1,9 +1,5 @@
-# import sqlite3
-# import smtplib
-# from email.mime.text import MIMEText
-# from email.mime.multipart import MIMEMultipart
-# from email_validator import validate_email, EmailNotValidError
-
+import sqlite3
+import streamlit as st
 # def send_emails_from_db(db_path, smtp_server, port, email, password, subject, message_body):
 #     try:
 #         conn = sqlite3.connect(db_path)
@@ -56,3 +52,8 @@
 #     DB_PATH = "subscribers.db"
 
 #     send_emails_from_db(DB_PATH, SMTP_SERVER, PORT, EMAIL, PASSWORD, SUBJECT, MESSAGE_BODY)
+
+
+
+def notification_script():
+    print("Sending notifications if needed.")

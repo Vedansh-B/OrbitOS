@@ -5,6 +5,8 @@ import pandas as pd
 from datetime import date
 from suntime import Sun
 import sqlite3
+from subscriptions.notification import notification_script
+from datetime import datetime, timedelta
 
 # Initialize the database
 def init_db():
@@ -19,9 +21,41 @@ def init_db():
     conn.commit()
     conn.close()
 
+def check_email_send():
+    # Email notification script
+    if "email_sender" not in st.session_state:
+        # When starting the program, we send out an email with all relevant data
+        st.session_state["email_sender"] = {
+            "need_to_send": True,
+            "most_recent_send": None,
+            "week_period": 1,
+        }
+
+    # Checking if we need to send another notification
+    today = datetime.now()
+
+    # If the most recent send time is None, we can send the first email
+    if st.session_state["email_sender"]["most_recent_send"] is None:
+        st.session_state["email_sender"]["need_to_send"] = True
+    else:
+        # Calculate one week from the most recent send date
+        resend_date = st.session_state["email_sender"]["most_recent_send"] + timedelta(weeks=st.session_state["email_sender"]["week_period"])
+        # Check if the resend date is in the past, meaning it's time to send another notification
+        if resend_date <= today:
+            st.session_state["email_sender"]["need_to_send"] = True
+
+    # If we need to send another notification
+    if st.session_state["email_sender"]["need_to_send"]:
+        # Call your notification script here
+        notification_script()
+
+        # After sending the email, reset the flag and update the most recent send time
+        st.session_state["email_sender"]["need_to_send"] = False
+        st.session_state["email_sender"]["most_recent_send"] = today
+
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    api_key = "GeoKey"  # Replace with your API key
+    api_key = "ad85e3fc5fd54c0bbdab0a47b1a9a537"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -128,13 +162,7 @@ with column3:
 location = st.text_input("Enter your location (City, Country)", "Kingston, Canada")
 
 lat, lon = get_lat_lon(location)
-# Check if the input is different from the previous lat/lon
-new_location_query = (
-    lat != st.session_state["map_data"]["lat"]
-    or lon != st.session_state["map_data"]["lon"]
-)
 
-st.header("Best Stargazing Spots")
 # Initialize session state for map data if not already done
 if "map_data" not in st.session_state:
     st.session_state["map_data"] = {
@@ -142,6 +170,13 @@ if "map_data" not in st.session_state:
         "lat": None,
         "lon": None,
     }
+# Now, you can safely access st.session_state["map_data"]
+new_location_query = (
+    lat != st.session_state["map_data"]["lat"]
+    or lon != st.session_state["map_data"]["lon"]
+)
+
+st.header("Best Stargazing Spots")
 
 col11, col22 = st.columns([0.6, 0.4])
 
@@ -152,13 +187,13 @@ with col11:
         st.write(f"Displaying results for: {location}")
 
         # Input your Meteomatic API Key as a tuple of ("Username", "Password")
-        display_map(lat, lon, ("user", "pass"), new_location_query)
+        display_map(lat, lon, ("univeristyo_lperson_coo", "K61vQbz56N"), new_location_query)
     else:
         st.write("Could not fetch location. Please check the input or API key.")
 
 with col22:
     def get_weather(location):
-        api_key = "weatherkey"  # Replace with your WeatherAPI key
+        api_key = "d0f8eee362e6488eb8a171041252501 "  # Replace with your WeatherAPI key
         base_url = "http://api.weatherapi.com/v1/current.json"
         params = {
             "key": api_key,
@@ -205,17 +240,4 @@ with col1:
 with col2:
     renderUpcomingEvents("data/cleaned_data/nasa_lunar_eclipse_data_revised.csv", "lunar eclipse")
 
-# Admin Section
-if st.checkbox("View Subscribers (Admin)"):
-    conn = sqlite3.connect("subscribers.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT email FROM subscribers")
-    rows = cursor.fetchall()
-    conn.close()
-
-    st.markdown("### Subscribed Emails")
-    if rows:
-        for row in rows:
-            st.write(f"- {row[0]}")
-    else:
-        st.info("No subscribers yet.")
+check_email_send()
