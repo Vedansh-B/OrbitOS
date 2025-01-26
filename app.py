@@ -1,30 +1,27 @@
 import streamlit as st
 from components.maps import display_map
-import requests 
+import requests
 import pandas as pd
 from datetime import date
 from suntime import Sun
-import requests  
 import sqlite3
-
 
 # Initialize the database
 def init_db():
-    conn = sqlite3.connect("subscribers.db")  # Create or open the database file
+    conn = sqlite3.connect("subscribers.db")
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS subscribers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             email TEXT NOT NULL UNIQUE
         )
-    """)  # Create the subscribers table
+    """)
     conn.commit()
     conn.close()
 
 # Function to get latitude and longitude from a location name
 def get_lat_lon(location):
-    # Example: Using OpenCage Geocoder API (replace with your API key)
-    api_key = "Your API Key"  # Replace with your API key
+    api_key = "36412dcc67a4467b85c7a9e5007bc91d"  # Replace with your API key
     url = f"https://api.opencagedata.com/geocode/v1/json?q={location}&key={api_key}"
     response = requests.get(url).json()
     if response['results']:
@@ -33,33 +30,24 @@ def get_lat_lon(location):
         return lat, lon
     return None, None
 
-# Initialize the database at app start
-init_db()
-
+# Get sunset time
 def getSunsetTime(latitude, longitude):
     sun = Sun(latitude, longitude)
     return sun.get_sunset_time()
 
 def getCurrentDate():
-    return date.today()
-    
+        return date.today()
+
+# Filter and render upcoming events
 def renderUpcomingEvents(csvPath, eventType):
-    date = getCurrentDate()
-    st.write("Upcoming " + eventType + " events in your area: ")
-    df = pd.read_csv(csvPath)
+    date_today = getCurrentDate()
+    st.markdown(f"### Upcoming {eventType.capitalize()} Events")
+    df = pd.read_csv(csvPath).drop(columns=["Unnamed: 0"])
+    df = df[df['Calendar Date'].apply(lambda x: convertEnglishDateToYearInt(x) >= int(str(date_today)[:4]))]
 
-    #Drop Unecessary Columns
-    df = df.drop(columns=["Unnamed: 0"])
-
-    #Drop past events
-    for index, row in df.iterrows():
-        if not convertEnglishDateToYearInt(row['Calendar Date']) >= int(str(date.today())[:4]):
-            df.drop(index, axis="index", inplace=True)
-
-    #Changes solar eclipse types from letters to words
     if eventType == "solar eclipse":
         convertSolarEclipseType(df)
-    if eventType == "lunar eclipse":
+    elif eventType == "lunar eclipse":
         convertLunarEclipseType(df)
 
     st.table(df.head(5))
@@ -88,72 +76,23 @@ def convertSolarEclipseType(df):
         elif row['Eclipse Type'][0] == "P":
             row['Eclipse Type'] = "Partial"
 
-# Navigation Bar
-with st.container():
-    st.markdown(
-        """
-        <style>
-        .nav {
-            display: flex;
-            justify-content: flex-end;
-            padding: 10px;
-            background-color: #333;
-            color: white;
-        }
-        .nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0 10px;
-            font-weight: bold;
-        }
-        .nav a:hover {
-            text-decoration: underline;
-        }
-        </style>
-        <div class="nav">
-            <a href="#about-us">About Us</a>
-            <a href="#login">Login</a>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# App setup
+st.set_page_config(page_title="Orbit OS", layout="wide")
+init_db()
 
-# Title and Introduction
-st.title("🌌 Orbit OS")
-st.write(
-    "Discover the best stargazing spots, track celestial events, "
-    "and explore space-related data interactively."
-)
-
-# Main Content
-st.header("Best Stargazing Spots")
-location = st.text_input("Enter your location (City, Country)", "Toronto, Canada")
-
-# Get latitude and longitude from the location entered by the user
-lat, lon = get_lat_lon(location)
-
-if lat and lon:
-    st.write(f"Displaying results for: {location}")
-    display_map(lat, lon)
-else:
-    st.write("Could not fetch location. Please check the input or API key.")
-
-st.write(getSunsetTime(lat, lon))
-
-col1, col2 = st.columns(2)
-
-with col1:
-    renderUpcomingEvents("data/nasa_solar_eclipse_data_revised.csv", "solar eclipse")
-
-with col2:
-    renderUpcomingEvents("data/nasa_lunar_eclipse_data_revised.csv", "lunar eclipse")
-
-# About Us Section
-st.header("About Us")
-st.write("This app is designed to help stargazers find the best spots and track celestial events.")
-
-# Newsletter Subscription Section (in the Sidebar)
+# Sidebar Navigation Menu
 with st.sidebar:
+    st.markdown("## Navigation Menu")
+    if st.button("Home"):
+        st.experimental_rerun()
+    if st.button("Stargazing Tips"):
+        st.write("Here are some tips for stargazing...")
+    if st.button("Contribute Data"):
+        st.write("You can contribute data here.")
+    if st.button("Contact Us"):
+        st.write("Contact us at orbitos@example.com.")
+
+    # Newsletter Subscription
     st.markdown("## 📬 Subscribe to Our Newsletter")
     email = st.text_input("Enter your email")
     subscribe = st.button("Subscribe")
@@ -164,17 +103,41 @@ with st.sidebar:
             cursor.execute("INSERT INTO subscribers (email) VALUES (?)", (email,))
             conn.commit()
             conn.close()
-            # Show confirmation message with a checkmark
-            st.markdown(
-                f"<p style='color: green; font-size: 18px;'>✅ Thank you for subscribing with {email}!</p>",
-                unsafe_allow_html=True,
-            )
+            st.success(f"✅ Thank you for subscribing with {email}!")
         except sqlite3.IntegrityError:
             st.error("This email is already subscribed.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
     elif subscribe and not email:
         st.error("Please enter a valid email address.")
 
-# Admin Section: View Subscribers (Optional)
+# Main Content
+st.title("🌌 Orbit OS")
+st.write("Discover the best stargazing spots, track celestial events, and explore space-related data interactively.")
+
+st.header("Best Stargazing Spots")
+location = st.text_input("Enter your location (City, Country)", "Toronto, Canada")
+
+lat, lon = get_lat_lon(location)
+
+if lat and lon:
+    st.write(f"Displaying results for: {location}")
+    with st.container():
+        display_map(lat, lon)
+else:
+    st.error("Could not fetch location. Please check the input or API key.")
+
+# Align tables below the map
+st.write("## Celestial Events in Your Area")
+col1, col2 = st.columns(2)
+
+with col1:
+    renderUpcomingEvents("data/cleaned_data/nasa_solar_eclipse_data_revised.csv", "solar eclipse")
+
+with col2:
+    renderUpcomingEvents("data/cleaned_data/nasa_lunar_eclipse_data_revised.csv", "lunar eclipse")
+
+# Admin Section
 if st.checkbox("View Subscribers (Admin)"):
     conn = sqlite3.connect("subscribers.db")
     cursor = conn.cursor()
@@ -182,17 +145,9 @@ if st.checkbox("View Subscribers (Admin)"):
     rows = cursor.fetchall()
     conn.close()
 
-    # Display the subscriber emails
-    st.write("### Subscribed Emails:")
+    st.markdown("### Subscribed Emails")
     if rows:
         for row in rows:
             st.write(f"- {row[0]}")
     else:
-        st.write("No subscribers yet.")
-
-
-if __name__ == "__main__":
-    st.write("Running Streamlit App")
-    st.write("### Subscribed Emails:")
-    for row in rows:
-        st.write(f"- {row[0]}")
+        st.info("No subscribers yet.")
