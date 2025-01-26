@@ -2,7 +2,8 @@ import math
 from datetime import datetime
 import folium
 import requests
-
+from folium.features import CustomIcon
+from PIL import Image
 
 def fetch_point_coverage(lat, lon, api_key):
     """
@@ -27,7 +28,7 @@ def generate_25_dense_points(center_lat, center_lon, circle_radius_km, overlap_f
     """
     points = []
     distance_between_centers = circle_radius_km * 2 * (1 - overlap_fraction)  # Slight overlap between circles
-    num_points = 25
+    num_points = 20
     current_ring = 0
 
     while len(points) < num_points:
@@ -72,7 +73,7 @@ def fetch_cloud_coverage(lat, lon, api_key):
 
 def get_cloud_coverage(centre_lat, centre_lon, api_key):
     """
-    Add a cloud coverage layer to the map with minimal gaps and exactly 25 data points.
+    Add a cloud coverage layer to the map with minimal gaps and exactly 25 data points, using an image.
     """
     clouds = []
     cloud_points = fetch_cloud_coverage(centre_lat, centre_lon, api_key)
@@ -80,20 +81,32 @@ def get_cloud_coverage(centre_lat, centre_lon, api_key):
     for cloud in cloud_points:
         if cloud is not None:
             cloud_percent = cloud.get('cloud_cover')
-            fill_color = (
-                "lightblue" if 0 <= cloud_percent < 25 else
-                "skyblue" if 25 <= cloud_percent < 50 else
-                "deepskyblue" if 50 <= cloud_percent < 75 else
-                "darkblue"
+            
+            # Set the cloud icon size based on the cloud coverage percentage
+            icon_size = (50, 50)  # Default size
+            if cloud_percent < 30:
+                icon_size = (100, 100)  # Smaller icon for low coverage
+            elif cloud_percent > 70:
+                icon_size = (200, 200)  # Larger icon for high coverage
+            
+            # Choose the appropriate icon based on cloud coverage
+            if cloud_percent < 30:
+                cloud_icon_image = "images/lighter_cloud.png"  # Low coverage: use transparent icon
+            else:
+                cloud_icon_image = "images/light_cloud.png"  # High coverage: use non-transparent icon
+
+            # Create custom icon with the chosen image
+            cloud_icon = folium.CustomIcon(
+                icon_image=cloud_icon_image,  # Use the selected icon
+                icon_size=icon_size,
             )
-            circle = folium.Circle(
+
+            # Create marker with cloud icon
+            cloud_marker = folium.Marker(
                 location=[cloud['lat'], cloud['lon']],
-                radius=1150,  # Slightly larger radius (1.15 km)
-                color="blue" if cloud_percent < 30 else "gray",
-                fill=True,
-                fill_color=fill_color,
-                fill_opacity=0.4,
+                icon=cloud_icon,
                 tooltip=f"Cloud Coverage: {cloud_percent}%",
             )
-            clouds.append(circle)
+            clouds.append(cloud_marker)
+
     return clouds
